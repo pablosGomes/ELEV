@@ -60,15 +60,8 @@ npm run build
 ```
 
 ```bash
-npm run vagas
-```
-
-```bash
 npm run format
 ```
-
-`npm run vagas` regenera `src/data/vagas-geradas.js` (é o mesmo passo que o
-`build` roda sozinho, via `prebuild`).
 
 ---
 
@@ -87,75 +80,51 @@ inteiro sem configurar nada.
 
 ---
 
-## Vagas reais e inteligência artificial (opcional)
+## Recomendação personalizada de vagas (opcional)
 
-O site nasce com vagas de exemplo, avisando o usuário e apontando para os
-portais oficiais. Duas chaves opcionais melhoram isso, e cada uma funciona sem
-a outra.
+A aba **Vagas** tem uma seção que cruza o resultado do teste vocacional com o
+currículo do usuário e devolve as vagas mais compatíveis, com o motivo de cada
+indicação e o que vale preparar antes de se candidatar.
 
-### `JOOBLE_API_KEY` — vagas reais
+É o único recurso do site que usa inteligência artificial, e o único que
+precisa de uma chave. Sem ela, a seção aparece explicando que está desligada —
+todo o resto do site funciona normalmente.
 
-Chave gratuita em <https://br.jooble.org/api/about>. Com ela, o build passa a
-buscar vagas reais de Jovem Aprendiz em vez dos exemplos.
+### Como ligar
 
-### `ANTHROPIC_API_KEY` — organização e recomendação
+1. Pegue uma chave gratuita (sem cartão) em <https://console.mistral.ai>.
+2. Na Vercel: **Settings > Environment Variables**, adicione `MISTRAL_API_KEY`.
+3. Faça um novo deploy.
 
-Chave em <https://console.anthropic.com/settings/keys>. Habilita duas coisas:
+Provedor: **Mistral**, modelo `mistral-small-4-0-26-03`, configurado em
+[`api/_mistral.js`](api/_mistral.js). A Mistral publica IDs datados e aposenta
+os antigos sem alias `-latest`, então o modelo também é sobrescrevível pela
+variável `MISTRAL_MODEL` — se o ID sair do ar, dá para trocar sem commit.
 
-**1. Organizar os anúncios (roda no build).** A API de vagas devolve o anúncio
-como um parágrafo de texto corrido — sem requisitos separados, sem benefícios,
-sem faixa etária. O Claude lê esse texto e preenche esses campos, classifica a
-área pelo conteúdo do trabalho (e não por palavra-chave no título) e descarta o
-que voltou na busca mas não é aprendizagem — estágio, trainee, CLT júnior.
-
-**2. Recomendar por perfil (roda sob demanda).** A seção _"Quais dessas vagas
-combinam com você?"_ cruza o resultado do teste vocacional com o currículo do
-usuário e devolve as vagas mais compatíveis, com o motivo de cada uma e o que
-vale preparar antes de se candidatar.
-
-Modelo usado: **Claude Sonnet 5**, configurado em [`api/_ia.js`](api/_ia.js).
-
-### Por que o enriquecimento roda no build
-
-```
-npm run build  →  prebuild  →  scripts/gerar-vagas.mjs  →  vite build
-                                       │
-                                       ├── busca no Jooble
-                                       ├── organiza com o Claude
-                                       └── grava src/data/vagas-geradas.js
-```
-
-O custo fica por deploy, não por visitante; a página abre instantânea, sem
-esperar o modelo; e a chave da Anthropic nunca chega perto do navegador. Para
-atualizar as vagas, basta um novo deploy — na Vercel dá para agendar um
-redeploy diário em **Settings > Git > Deploy Hooks**.
-
-Só a recomendação personalizada roda em tempo real, porque depende do perfil de
-cada usuário.
+O free tier tem limite de requisições por minuto. A rota trata o HTTP 429 e
+devolve uma mensagem dizendo para esperar alguns segundos, em vez de um erro
+genérico — o caso típico é uma apresentação com várias pessoas clicando junto.
 
 ### O que a IA não faz
 
-Um modelo de linguagem **não descobre vagas** — ele não tem índice de ofertas em
-tempo real. Se pedíssemos "liste vagas de Jovem Aprendiz hoje", ele inventaria,
+Ela **não descobre vagas**. Um modelo de linguagem não tem índice de ofertas em
+tempo real; se pedíssemos "liste vagas de Jovem Aprendiz hoje", ele inventaria,
 e o resultado seria pior do que não ter dado nenhum, porque pareceria
-verdadeiro. Por isso a origem continua sendo uma API real de vagas; o Claude só
-organiza e recomenda o que já existe. Os dois prompts em `api/_ia.js` são
-explícitos: extrair, nunca inventar — campo que não está no anúncio fica vazio.
+verdadeiro.
 
-### Degradação por etapas
+As vagas do site vêm de [`src/data/vagas.js`](src/data/vagas.js): são exemplos
+representativos, montados a partir de perfis reais de programas de
+aprendizagem, cada um marcado com `exemplo: true`. A interface avisa o usuário
+e aponta para os portais oficiais (CIEE, Nube, SENAI, Senac, Aprendiz Legal,
+Sine), onde as vagas de verdade são publicadas. Para plugar uma fonte real
+depois, basta trocar o que `/api/vagas` devolve — nenhuma tela muda.
 
-| Chaves configuradas    | O que acontece                                                            |
-| ---------------------- | ------------------------------------------------------------------------- |
-| Nenhuma                | Vagas de exemplo, com aviso. Recomendação desligada, com explicação.      |
-| Só `JOOBLE_API_KEY`    | Vagas reais, com área classificada por palavra-chave e requisitos vazios. |
-| Só `ANTHROPIC_API_KEY` | Vagas de exemplo, mas a recomendação personalizada funciona sobre elas.   |
-| As duas                | Vagas reais e organizadas + recomendação personalizada.                   |
+A resposta do modelo também não é aceita de olhos fechados: `api/_mistral.js`
+valida cada recomendação, descarta as que citam um id de vaga inexistente e
+remove repetidas, porque saída de modelo é entrada não confiável como qualquer
+outra.
 
-O script de build **nunca derruba o deploy**: se uma chave faltar, a API cair ou
-a resposta vier inesperada, ele grava um arquivo vazio e o site volta para os
-exemplos.
-
-### Privacidade da recomendação
+### Privacidade
 
 O currículo é dado pessoal, então:
 
@@ -174,13 +143,10 @@ O currículo é dado pessoal, então:
 ```
 elev/
 ├── api/                      Serverless Functions da Vercel
-│   ├── _fonte-vagas.js       Busca no Jooble e normalização (sem IA)
-│   ├── _ia.js                Prompts, schemas e chamadas ao Claude
+│   ├── _mistral.js           Prompt, schema e validação da recomendação
 │   ├── combinar.js           POST /api/combinar — recomendação por perfil
 │   ├── cursos.js             GET  /api/cursos   — catálogo, com filtros
-│   └── vagas.js              GET  /api/vagas    — serve o que o build gerou
-├── scripts/
-│   └── gerar-vagas.mjs       Roda no prebuild: busca + organiza as vagas
+│   └── vagas.js              GET  /api/vagas    — catálogo de vagas
 ├── public/
 │   └── favicon.svg
 ├── src/
@@ -194,9 +160,7 @@ elev/
 │   │   ├── RecomendacoesIa   Seção "vagas que combinam com você"
 │   │   ├── Revelar           Animação de entrada ao rolar a página
 │   │   └── ui.jsx            Botão, Chip, Aviso, Progresso, estados de lista
-│   ├── data/
-│   │   ├── vagas-geradas.js  GERADO no build — não edite à mão
-│   │   └── ...               Cursos, vagas de exemplo, perguntas, guias
+│   ├── data/                 Cursos, vagas, perguntas do teste, guias
 │   ├── hooks/                useRecurso, useArmazenamentoLocal
 │   ├── lib/                  texto.js, icones.js, pdf.js, perfil.js
 │   ├── pages/                Uma página por aba
@@ -206,10 +170,6 @@ elev/
 ├── vercel.json
 └── vite.config.js
 ```
-
-> `src/data/vagas-geradas.js` é regravado a cada build. Ele fica versionado de
-> propósito, para que um `npm run dev` recém-clonado funcione sem precisar rodar
-> o gerador antes.
 
 ---
 

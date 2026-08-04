@@ -394,23 +394,6 @@ export default function Vagas() {
           </Aviso>
         )}
 
-        {/*
-          Quando os campos da vaga foram organizados por IA, o usuário precisa
-          saber — tanto para confiar quanto para desconfiar na medida certa.
-        */}
-        {!carregando && dados?.fonte === 'jooble+claude' && (
-          <Aviso tom="info" titulo="Vagas reais, organizadas automaticamente" className="mt-6">
-            Estas vagas vêm de uma busca real. Requisitos, atividades e benefícios foram extraídos
-            do texto de cada anúncio por inteligência artificial, então podem conter imprecisões —
-            confirme sempre no anúncio original antes de se candidatar.
-            {dados.geradoEm && (
-              <span className="mt-1 block text-xs opacity-75">
-                Última atualização: {formatarData(dados.geradoEm.slice(0, 10))}.
-              </span>
-            )}
-          </Aviso>
-        )}
-
         {/* ---------------------------------------------------------- Lista */}
         {carregando ? (
           <Carregando texto="Buscando vagas..." />

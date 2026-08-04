@@ -19,8 +19,7 @@
  * A interface informa isso ao usuário antes do clique.
  */
 
-import { criarCliente, recomendarVagas } from './_ia.js'
-import { VAGAS_GERADAS } from '../src/data/vagas-geradas.js'
+import { criarCliente, ehLimiteDeUso, recomendarVagas } from './_mistral.js'
 import { VAGAS_EXEMPLO } from '../src/data/vagas.js'
 
 /** Quantas vagas são oferecidas ao modelo como candidatas. */
@@ -100,7 +99,7 @@ export default async function handler(req, res) {
   if (!cliente) {
     return res.status(503).json({
       erro: 'recurso_indisponivel',
-      mensagem: 'A recomendação personalizada precisa da variável de ambiente ANTHROPIC_API_KEY.',
+      mensagem: 'A recomendação personalizada precisa da variável de ambiente MISTRAL_API_KEY.',
     })
   }
 
@@ -113,15 +112,10 @@ export default async function handler(req, res) {
     })
   }
 
-  const disponiveis =
-    Array.isArray(VAGAS_GERADAS?.vagas) && VAGAS_GERADAS.vagas.length > 0
-      ? VAGAS_GERADAS.vagas
-      : VAGAS_EXEMPLO
-
   // Prioriza as vagas das áreas de maior afinidade, mas mantém as demais na
   // lista — às vezes a vaga que mais combina não é da área "certa".
   const preferidas = new Set(perfil.areasComMaiorAfinidade.slice(0, 3).map((a) => a.area))
-  const ordenadas = [...disponiveis].sort((a, b) => {
+  const ordenadas = [...VAGAS_EXEMPLO].sort((a, b) => {
     const pesoA = preferidas.has(a.area) ? 0 : 1
     const pesoB = preferidas.has(b.area) ? 0 : 1
     return pesoA - pesoB
@@ -143,6 +137,17 @@ export default async function handler(req, res) {
   } catch (erro) {
     // Sem detalhes do corpo da requisição no log — ver nota de privacidade.
     console.error('[api/combinar] falha na recomendação:', erro.message)
+
+    // O free tier da Mistral tem limite de requisições por minuto. Isso é
+    // esperado numa apresentação com várias pessoas clicando ao mesmo tempo,
+    // e merece uma mensagem que diz o que fazer em vez de "erro interno".
+    if (ehLimiteDeUso(erro)) {
+      return res.status(429).json({
+        erro: 'limite_de_uso',
+        mensagem:
+          'Muitas análises ao mesmo tempo. Espere alguns segundos e tente de novo — o serviço de IA é gratuito e tem limite por minuto.',
+      })
+    }
 
     return res.status(502).json({
       erro: 'falha_na_recomendacao',

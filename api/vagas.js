@@ -1,18 +1,18 @@
 /**
  * Serverless Function (Vercel) — GET /api/vagas
  *
- * Esta rota não busca nem processa nada: ela só entrega o que já foi
- * preparado. O trabalho pesado (buscar no Jooble e organizar cada anúncio com
- * o Claude) acontece uma vez por deploy, em `scripts/gerar-vagas.mjs`.
+ * Serve o catálogo de vagas de Jovem Aprendiz a partir de `src/data/vagas.js`.
  *
- * Isso deixa a resposta instantânea, o custo por deploy em vez de por
- * visitante, e a chave da Anthropic fora do caminho de qualquer requisição.
+ * Sobre a origem dos dados: são vagas de exemplo, montadas a partir de perfis
+ * reais de programas de aprendizagem, e cada uma carrega `exemplo: true`. A
+ * interface avisa o usuário disso e aponta para os portais oficiais, onde as
+ * vagas de verdade são publicadas. É menos vistoso do que fingir uma busca ao
+ * vivo, e é a única forma honesta de fazer isso sem uma fonte real.
  *
- * Sem as chaves configuradas, o arquivo gerado sai vazio e caímos nas vagas de
- * exemplo — a interface avisa o usuário e aponta para os portais oficiais.
+ * O front-end consome via HTTP justamente para que trocar essa origem — por um
+ * CMS, uma planilha ou uma API de vagas — não exija mudar nenhuma tela.
  */
 
-import { VAGAS_GERADAS } from '../src/data/vagas-geradas.js'
 import { VAGAS_EXEMPLO } from '../src/data/vagas.js'
 
 const CACHE = 'public, s-maxage=3600, stale-while-revalidate=86400'
@@ -25,22 +25,9 @@ export default function handler(req, res) {
 
   res.setHeader('Cache-Control', CACHE)
 
-  const geradas = Array.isArray(VAGAS_GERADAS?.vagas) ? VAGAS_GERADAS.vagas : []
-
-  if (geradas.length === 0) {
-    return res.status(200).json({
-      fonte: 'exemplos',
-      motivo: VAGAS_GERADAS?.motivo ?? 'Nenhuma vaga foi gerada no último build.',
-      total: VAGAS_EXEMPLO.length,
-      vagas: VAGAS_EXEMPLO,
-    })
-  }
-
   return res.status(200).json({
-    fonte: VAGAS_GERADAS.fonte,
-    geradoEm: VAGAS_GERADAS.geradoEm,
-    modelo: VAGAS_GERADAS.modelo ?? null,
-    total: geradas.length,
-    vagas: geradas,
+    fonte: 'exemplos',
+    total: VAGAS_EXEMPLO.length,
+    vagas: VAGAS_EXEMPLO,
   })
 }

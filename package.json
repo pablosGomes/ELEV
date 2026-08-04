@@ -9,9 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "lint": "prettier --check .",
-    "vagas": "node scripts/gerar-vagas.mjs",
-    "prebuild": "node scripts/gerar-vagas.mjs"
+    "lint": "prettier --check ."
   },
   "repository": {
     "type": "git",
@@ -19,7 +17,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.115.0",
+    "@mistralai/mistralai": "^2.5.0",
     "framer-motion": "^12.43.0",
     "html2canvas-pro": "^2.3.3",
     "jspdf": "^4.2.1",
