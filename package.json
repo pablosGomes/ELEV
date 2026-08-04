@@ -1,0 +1,38 @@
+{
+  "name": "elev",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "ELEV - Plataforma de capacitacao e orientacao profissional para jovens",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "prettier --write .",
+    "lint": "prettier --check .",
+    "vagas": "node scripts/gerar-vagas.mjs",
+    "prebuild": "node scripts/gerar-vagas.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pablosGomes/ELEV.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
+    "framer-motion": "^12.43.0",
+    "html2canvas-pro": "^2.3.3",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^1.28.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.0.5",
+    "prettier": "^3.9.6",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.2.0"
+  }
+}

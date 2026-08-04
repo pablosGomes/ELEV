@@ -1,0 +1,149 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   ELEV — Design tokens
+   Identidade visual: vermelho/vinho (principal), branco e cinza claro
+   (secundarias), variacoes do vermelho para botoes, links e destaques.
+   ========================================================================== */
+@theme {
+  /* Vermelho / vinho da marca */
+  --color-elev-50: #fef2f4;
+  --color-elev-100: #fde3e7;
+  --color-elev-200: #fbcbd3;
+  --color-elev-300: #f7a6b4;
+  --color-elev-400: #f0728c;
+  --color-elev-500: #e0435f;
+  --color-elev-600: #c62839;
+  --color-elev-700: #9b1b30;
+  --color-elev-800: #7a1626;
+  --color-elev-900: #58101c;
+  --color-elev-950: #350a11;
+
+  /* Cinzas neutros */
+  --color-areia-50: #fafafa;
+  --color-areia-100: #f4f4f5;
+  --color-areia-200: #e7e7e9;
+  --color-areia-300: #d2d2d6;
+  --color-areia-400: #a0a0a8;
+  --color-areia-500: #71717a;
+  --color-areia-600: #52525b;
+  --color-areia-700: #3f3f46;
+  --color-areia-800: #27272a;
+  --color-areia-900: #18181b;
+
+  /* Tipografia */
+  --font-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* Sombras da marca */
+  --shadow-elev: 0 4px 24px -4px rgb(155 27 48 / 0.16);
+  --shadow-elev-lg: 0 18px 44px -12px rgb(155 27 48 / 0.28);
+
+  /* Animacoes */
+  --animate-fade-up: fade-up 0.5s ease-out both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-white font-sans text-areia-800 antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-areia-900;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Foco visivel e consistente em todo o site (acessibilidade) */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    @apply outline-2 outline-offset-2 outline-elev-600;
+  }
+
+  ::selection {
+    @apply bg-elev-700 text-white;
+  }
+}
+
+/* ==========================================================================
+   Componentes reutilizaveis
+   ========================================================================== */
+@layer components {
+  .container-elev {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .campo-elev {
+    @apply w-full rounded-xl border border-areia-300 bg-white px-3.5 py-2.5 text-sm
+      text-areia-900 transition placeholder:text-areia-400
+      focus:border-elev-600 focus:ring-4 focus:ring-elev-600/10 focus:outline-none;
+  }
+
+  .rotulo-elev {
+    @apply mb-1.5 block text-xs font-semibold tracking-wide text-areia-600 uppercase;
+  }
+
+  .cartao-elev {
+    @apply rounded-2xl border border-areia-200 bg-white shadow-sm transition
+      hover:-translate-y-0.5 hover:border-elev-200 hover:shadow-elev;
+  }
+}
+
+/* ==========================================================================
+   Utilitarios
+   ========================================================================== */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Fundo quadriculado sutil usado nos heros */
+@utility malha-elev {
+  background-image:
+    linear-gradient(to right, rgb(155 27 48 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(155 27 48 / 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ==========================================================================
+   Impressao / respeito a preferencia de movimento reduzido
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
