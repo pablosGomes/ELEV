@@ -8,6 +8,14 @@
 
 export const ABAS = [
   {
+    para: '/sobre',
+    rotulo: 'Sobre o Projeto',
+    rotuloCurto: 'Sobre',
+    icone: 'Users',
+    descricao: 'Conheça o ELEV, seus objetivos e a equipe por trás do projeto.',
+    chamada: 'Conhecer o projeto',
+  },
+  {
     para: '/cursos',
     rotulo: 'Cursos Gratuitos',
     rotuloCurto: 'Cursos',

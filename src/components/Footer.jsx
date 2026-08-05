@@ -41,11 +41,6 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
-            <li>
-              <Link to="/sobre" className="text-sm text-areia-600 transition hover:text-elev-700">
-                Sobre o projeto
-              </Link>
-            </li>
           </ul>
         </nav>
 

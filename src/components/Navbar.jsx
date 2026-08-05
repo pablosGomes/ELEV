@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { Menu, Users, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { obterIcone } from '../lib/icones.js'
 
 import Logo from './Logo.jsx'
@@ -74,18 +74,6 @@ export default function Navbar() {
               </NavLink>
             </li>
           ))}
-          <li>
-            <NavLink to="/sobre" className={classeAba}>
-              {({ isActive }) => (
-                <>
-                  Sobre
-                  {isActive && (
-                    <span className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-elev-700" />
-                  )}
-                </>
-              )}
-            </NavLink>
-          </li>
         </ul>
 
         <div className="flex items-center gap-2">
@@ -144,24 +132,6 @@ export default function Navbar() {
                 </li>
               )
             })}
-            <li>
-              <NavLink
-                to="/sobre"
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition ${
-                    isActive ? 'bg-elev-50 text-elev-800' : 'text-areia-700 hover:bg-areia-100'
-                  }`
-                }
-              >
-                <Users className="h-4.5 w-4.5 shrink-0 text-elev-700" aria-hidden="true" />
-                <span className="min-w-0">
-                  Sobre
-                  <span className="block text-xs font-normal text-areia-500">
-                    Conheça o projeto e a equipe
-                  </span>
-                </span>
-              </NavLink>
-            </li>
           </ul>
         </div>
       )}
