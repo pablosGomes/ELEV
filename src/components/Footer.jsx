@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ExternalLink, Heart } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 
 import Logo from './Logo.jsx'
 import { ABAS } from '../data/navegacao.js'
@@ -65,13 +65,8 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-areia-200">
-        <div className="container-elev flex flex-col items-center justify-between gap-3 py-6 text-xs text-areia-500 sm:flex-row">
+        <div className="container-elev flex items-center justify-center py-6 text-xs text-areia-500">
           <p>© {ano} ELEV. Todos os direitos reservados.</p>
-          <p className="inline-flex items-center gap-1.5">
-            Feito com{' '}
-            <Heart className="h-3.5 w-3.5 fill-elev-600 text-elev-600" aria-hidden="true" />
-            para quem está começando
-          </p>
         </div>
       </div>
     </footer>
