@@ -9,12 +9,21 @@
  * ────────────────────────────────────────────────────────────────────────────
  * Ela NÃO descobre vagas. Um modelo de linguagem não tem índice de ofertas em
  * tempo real; se perguntássemos "liste vagas de Jovem Aprendiz hoje", ele
- * inventaria — pior que dado nenhum, porque pareceria verdadeiro. As vagas do
- * site vêm de `src/data/vagas.js` e são identificadas como exemplos.
+ * inventaria — pior que dado nenhum, porque pareceria verdadeiro. As vagas vêm
+ * de uma API real (Jooble) ou, sem ela, dos exemplos de `src/data/vagas.js`.
  *
- * O que ela faz é a única coisa aqui que código comum não faria bem: ler o
- * perfil do jovem (teste vocacional + currículo) e escolher, entre as vagas
- * existentes, as que combinam — explicando o porquê de cada uma.
+ * Ela faz duas coisas que código comum não faria bem:
+ *
+ *   1. ORGANIZAR (no build) — o anúncio chega como um parágrafo de texto
+ *      corrido. O modelo separa em requisitos, atividades, benefícios,
+ *      escolaridade e faixa etária, classifica a área pelo conteúdo do
+ *      trabalho e descarta o que não é aprendizagem de verdade.
+ *
+ *   2. RECOMENDAR (sob demanda) — lê o perfil do jovem (teste vocacional +
+ *      currículo) e escolhe, entre as vagas existentes, as que combinam.
+ *
+ * A regra que atravessa os dois prompts: extrair, nunca inventar. Campo que
+ * não está no anúncio fica vazio.
  *
  * ────────────────────────────────────────────────────────────────────────────
  * Por que Mistral
@@ -25,6 +34,8 @@
  */
 
 import { Mistral } from '@mistralai/mistralai'
+
+import { AREAS } from '../src/data/areas.js'
 
 /**
  * Modelo usado.
@@ -42,8 +53,113 @@ export function criarCliente() {
   return new Mistral({ apiKey: process.env.MISTRAL_API_KEY })
 }
 
+const IDS_DE_AREA = AREAS.map((area) => area.id)
+
 /* ==========================================================================
-   Esquema e instruções da recomendação
+   1. Organização dos anúncios (executado no build)
+   ========================================================================== */
+
+const ESQUEMA_ORGANIZACAO = {
+  type: 'object',
+  properties: {
+    vagas: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', description: 'O mesmo id recebido na entrada.' },
+          ehAprendiz: {
+            type: 'boolean',
+            description:
+              'true apenas se for programa de aprendizagem. Estágio, trainee e CLT júnior são false.',
+          },
+          titulo: { type: 'string' },
+          empresa: { type: 'string' },
+          area: { type: 'string', enum: IDS_DE_AREA },
+          cidade: { type: 'string' },
+          estado: { type: 'string', description: 'Sigla da UF em maiúsculas, ou string vazia.' },
+          modalidade: { type: 'string', enum: ['Presencial', 'Híbrido', 'Remoto', ''] },
+          jornada: { type: 'string', description: 'Ex.: "6 horas/dia". Vazio se não constar.' },
+          salario: {
+            type: 'string',
+            description: 'Como aparece no anúncio. Vazio se não constar.',
+          },
+          escolaridade: { type: 'string', description: 'Vazio se não constar.' },
+          idade: { type: 'string', description: 'Ex.: "16 a 22 anos". Vazio se não constar.' },
+          descricao: { type: 'string', description: 'Resumo de 1 a 2 frases, em português.' },
+          requisitos: { type: 'array', items: { type: 'string' } },
+          atividades: { type: 'array', items: { type: 'string' } },
+          beneficios: { type: 'array', items: { type: 'string' } },
+        },
+        required: [
+          'id',
+          'ehAprendiz',
+          'titulo',
+          'empresa',
+          'area',
+          'cidade',
+          'estado',
+          'modalidade',
+          'jornada',
+          'salario',
+          'escolaridade',
+          'idade',
+          'descricao',
+          'requisitos',
+          'atividades',
+          'beneficios',
+        ],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['vagas'],
+  additionalProperties: false,
+}
+
+const INSTRUCOES_ORGANIZACAO = `Você organiza anúncios de vaga para o ELEV, um site gratuito que ajuda jovens brasileiros a conseguir o primeiro emprego.
+
+Você recebe anúncios em texto corrido e devolve os mesmos anúncios com os campos separados.
+
+REGRA MAIS IMPORTANTE: extraia, nunca invente.
+- Só preencha um campo se a informação estiver no texto do anúncio.
+- Se não estiver, devolva string vazia (ou lista vazia). Vazio é a resposta correta — não tente adivinhar salário, benefício ou requisito "provável".
+- Não reescreva fatos: se o anúncio diz "R$ 1.100", não escreva "cerca de mil reais".
+- Quem vai ler é um adolescente procurando o primeiro emprego. Um benefício inventado faz alguém perder uma manhã de ônibus.
+
+Sobre "ehAprendiz": true só para programas de aprendizagem (Jovem Aprendiz, Menor Aprendiz, Aprendiz Legal, aprendizagem industrial). Estágio, trainee, temporário e CLT júnior são false, mesmo que aceitem quem não tem experiência.
+
+Sobre "area": classifique pelo conteúdo do trabalho, não só pelo título.
+${AREAS.map((a) => `- ${a.id}: ${a.nome} — ${a.descricao}`).join('\n')}
+
+Sobre as listas (requisitos, atividades, beneficios): itens curtos, no máximo 5 de cada, em português claro e direto, sem acrescentar nada que o anúncio não diga. O que se exige do candidato é requisito; o que ele vai fazer é atividade.
+
+Responda apenas com o JSON, sem texto em volta e sem blocos de código.`
+
+/**
+ * Organiza um lote de anúncios crus.
+ *
+ * @param {Mistral} cliente
+ * @param {Array<{id: string, titulo: string, empresa: string, local: string, texto: string}>} lote
+ * @returns {Promise<Array>} anúncios com os campos separados
+ */
+export async function organizarLote(cliente, lote) {
+  const bruto = await conversar(
+    cliente,
+    INSTRUCOES_ORGANIZACAO,
+    `Organize os anúncios abaixo.\n\n${JSON.stringify(lote, null, 2)}`,
+    { nome: 'vagas_organizadas', esquema: ESQUEMA_ORGANIZACAO },
+  )
+
+  const idsValidos = new Set(lote.map((item) => item.id))
+
+  return (Array.isArray(bruto?.vagas) ? bruto.vagas : []).filter(
+    (vaga) => vaga && typeof vaga.id === 'string' && idsValidos.has(vaga.id),
+  )
+}
+
+/* ==========================================================================
+   2. Esquema e instruções da recomendação
    ========================================================================== */
 
 const ESQUEMA_RECOMENDACAO = {
@@ -224,25 +340,28 @@ export function ehLimiteDeUso(erro) {
 }
 
 /**
- * Cruza o perfil do usuário com as vagas disponíveis.
+ * Faz uma chamada ao modelo esperando JSON de volta.
+ *
+ * Usada pelas duas tarefas (organizar e recomendar), com o mesmo tratamento
+ * de formato e de erro.
  *
  * @param {Mistral} cliente
- * @param {object} perfil teste vocacional + currículo (já recortado)
- * @param {Array} vagas vagas candidatas, já resumidas
- * @returns {Promise<{resumo: string, recomendacoes: Array}>}
+ * @param {string} sistema instruções
+ * @param {string} usuario conteúdo da pergunta
+ * @param {{nome: string, esquema: object}} formato JSON schema esperado
+ * @returns {Promise<object>} JSON já parseado (ainda não validado)
  */
-export async function recomendarVagas(cliente, perfil, vagas) {
-  const mensagens = [
-    { role: 'system', content: INSTRUCOES },
-    {
-      role: 'user',
-      content: `PERFIL DO JOVEM\n${JSON.stringify(perfil, null, 2)}\n\nVAGAS DISPONÍVEIS\n${JSON.stringify(vagas, null, 2)}`,
-    },
-  ]
-
+async function conversar(cliente, sistema, usuario, formato) {
   // `temperature: 0` porque isto é extração estruturada, não redação criativa:
-  // queremos a mesma resposta para o mesmo perfil.
-  const base = { model: MODELO, messages: mensagens, temperature: 0 }
+  // queremos a mesma resposta para a mesma entrada.
+  const base = {
+    model: MODELO,
+    temperature: 0,
+    messages: [
+      { role: 'system', content: sistema },
+      { role: 'user', content: usuario },
+    ],
+  }
 
   let resultado
   try {
@@ -250,11 +369,7 @@ export async function recomendarVagas(cliente, perfil, vagas) {
       ...base,
       responseFormat: {
         type: 'json_schema',
-        jsonSchema: {
-          name: 'recomendacoes_de_vagas',
-          schemaDefinition: ESQUEMA_RECOMENDACAO,
-          strict: true,
-        },
+        jsonSchema: { name: formato.nome, schemaDefinition: formato.esquema, strict: true },
       },
     })
   } catch (erro) {
@@ -263,8 +378,8 @@ export async function recomendarVagas(cliente, perfil, vagas) {
     if (ehLimiteDeUso(erro)) throw erro
 
     // Plano B: nem todo modelo da Mistral aceita `json_schema`. O modo
-    // `json_object` é aceito por todos; o formato passa a ser garantido pelo
-    // prompt e pelo `validar()` acima, não pela API.
+    // `json_object` é aceito por todos; aí o formato passa a ser garantido
+    // pelo prompt e pela validação em código, não pela API.
     resultado = await cliente.chat.complete({
       ...base,
       responseFormat: { type: 'json_object' },
@@ -274,6 +389,24 @@ export async function recomendarVagas(cliente, perfil, vagas) {
   const texto = extrairTexto(resultado)
   if (!texto.trim()) throw new Error('O modelo devolveu uma resposta vazia.')
 
-  const idsValidos = new Set(vagas.map((vaga) => vaga.id))
-  return validar(lerJson(texto), idsValidos)
+  return lerJson(texto)
+}
+
+/**
+ * Cruza o perfil do usuário com as vagas disponíveis.
+ *
+ * @param {Mistral} cliente
+ * @param {object} perfil teste vocacional + currículo (já recortado)
+ * @param {Array} vagas vagas candidatas, já resumidas
+ * @returns {Promise<{resumo: string, recomendacoes: Array}>}
+ */
+export async function recomendarVagas(cliente, perfil, vagas) {
+  const bruto = await conversar(
+    cliente,
+    INSTRUCOES,
+    `PERFIL DO JOVEM\n${JSON.stringify(perfil, null, 2)}\n\nVAGAS DISPONÍVEIS\n${JSON.stringify(vagas, null, 2)}`,
+    { nome: 'recomendacoes_de_vagas', esquema: ESQUEMA_RECOMENDACAO },
+  )
+
+  return validar(bruto, new Set(vagas.map((vaga) => vaga.id)))
 }

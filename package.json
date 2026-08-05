@@ -9,7 +9,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "lint": "prettier --check ."
+    "lint": "prettier --check .",
+    "vagas": "node scripts/gerar-vagas.mjs",
+    "prebuild": "node scripts/gerar-vagas.mjs"
   },
   "repository": {
     "type": "git",
