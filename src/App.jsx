@@ -22,6 +22,7 @@ const TesteVocacional = lazy(() => import('./pages/TesteVocacional.jsx'))
 const Curriculo = lazy(() => import('./pages/Curriculo.jsx'))
 const Vagas = lazy(() => import('./pages/Vagas.jsx'))
 const Dicas = lazy(() => import('./pages/Dicas.jsx'))
+const Sobre = lazy(() => import('./pages/Sobre.jsx'))
 const NaoEncontrada = lazy(() => import('./pages/NaoEncontrada.jsx'))
 
 export default function App() {
@@ -67,6 +68,14 @@ export default function App() {
           element={
             <Suspense fallback={<Carregando className="min-h-[60dvh]" />}>
               <Dicas />
+            </Suspense>
+          }
+        />
+        <Route
+          path="sobre"
+          element={
+            <Suspense fallback={<Carregando className="min-h-[60dvh]" />}>
+              <Sobre />
             </Suspense>
           }
         />

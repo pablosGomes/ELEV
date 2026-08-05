@@ -32,6 +32,7 @@ import {
   Target,
   User,
   UserRound,
+  Users,
   Wrench,
 } from 'lucide-react'
 
@@ -56,6 +57,7 @@ export const ICONES = {
   Target,
   User,
   UserRound,
+  Users,
   Wrench,
 }
 
