@@ -19,12 +19,12 @@ Cada funcionalidade tem a sua própria aba, como previsto na documentação do p
 | **Teste Vocacional**    | `/teste-vocacional` | 18 afirmações em escala Likert; devolve as áreas com maior afinidade, carreiras sugeridas e cursos da área.     |
 | **Criar Currículo**     | `/curriculo`        | Formulário com prévia em tempo real e download do currículo pronto em PDF.                                      |
 | **Vagas**               | `/vagas`            | Vagas de Jovem Aprendiz com requisitos, benefícios, forma de candidatura e portais oficiais.                    |
-| **Dicas e Vídeo-Aulas** | `/dicas`            | Guias sobre currículo, erros comuns, entrevista e primeiro emprego, mais vídeo-aulas e checklist de preparação. |
+| **Dicas e Vídeo-Aulas** | `/dicas`            | Guias sobre currículo, erros comuns, entrevista e primeiro emprego, mais vídeo-aulas.                           |
 
 Detalhes que valem destacar:
 
-- **Nada exige cadastro.** Currículo, teste vocacional e checklist ficam salvos
-  no `localStorage` do próprio navegador do usuário — nenhum dado sai do
+- **Nada exige cadastro.** Currículo e teste vocacional ficam salvos no
+  `localStorage` do próprio navegador do usuário — nenhum dado sai do
   aparelho.
 - **As áreas profissionais são um vocabulário compartilhado.** Terminar o teste
   vocacional leva direto aos cursos e às vagas daquela área

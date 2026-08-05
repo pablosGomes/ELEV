@@ -264,18 +264,4 @@ export const VIDEO_AULAS = [
   },
 ]
 
-/** Checklist interativo exibido no fim da aba de dicas. */
-export const CHECKLIST_PREPARO = [
-  { id: 'c1', texto: 'Tenho um e-mail profissional com meu nome e sobrenome' },
-  { id: 'c2', texto: 'Meu currículo cabe em uma página e está salvo em PDF' },
-  { id: 'c3', texto: 'Revisei o português do currículo com outra pessoa' },
-  { id: 'c4', texto: 'Concluí pelo menos um curso gratuito com certificado' },
-  { id: 'c5', texto: 'Sei apresentar quem eu sou em 1 minuto, sem travar' },
-  { id: 'c6', texto: 'Estou cadastrado em pelo menos dois portais de vagas' },
-  { id: 'c7', texto: 'Tenho uma roupa separada para entrevista' },
-  { id: 'c8', texto: 'Pesquisei sobre a empresa antes de cada entrevista' },
-  { id: 'c9', texto: 'Meu WhatsApp e minhas redes têm aparência profissional' },
-  { id: 'c10', texto: 'Anoto todas as vagas em que me candidatei' },
-]
-
 export const CATEGORIAS_GUIA = [...new Set(GUIAS.map((g) => g.categoria))]

@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { ICONES, obterIcone } from '../lib/icones.js'
-import { ChevronDown, Clock, ExternalLink, PlayCircle, Check } from 'lucide-react'
+import { ChevronDown, Clock, ExternalLink, PlayCircle } from 'lucide-react'
 
 import CabecalhoPagina from '../components/CabecalhoPagina.jsx'
 import Revelar from '../components/Revelar.jsx'
-import { Botao, Chip, Progresso, TituloSecao } from '../components/ui.jsx'
-import useArmazenamentoLocal from '../hooks/useArmazenamentoLocal.js'
-import { CATEGORIAS_GUIA, CHECKLIST_PREPARO, GUIAS, VIDEO_AULAS } from '../data/dicas.js'
+import { Botao, Chip, TituloSecao } from '../components/ui.jsx'
+import { CATEGORIAS_GUIA, GUIAS, VIDEO_AULAS } from '../data/dicas.js'
 
 /* ==========================================================================
    Guia expansível
@@ -185,80 +184,6 @@ function VideoAula({ video, atraso }) {
 }
 
 /* ==========================================================================
-   Checklist
-   ========================================================================== */
-
-function Checklist() {
-  const [marcados, setMarcados] = useArmazenamentoLocal('elev:checklist', [])
-
-  const alternar = (id) =>
-    setMarcados((atual) =>
-      atual.includes(id) ? atual.filter((item) => item !== id) : [...atual, id],
-    )
-
-  const concluidos = CHECKLIST_PREPARO.filter((item) => marcados.includes(item.id)).length
-  const percentual = Math.round((concluidos / CHECKLIST_PREPARO.length) * 100)
-
-  return (
-    <div className="rounded-2xl border border-areia-200 bg-white p-7 shadow-sm sm:p-9">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h3 className="text-lg font-bold">Checklist de preparação</h3>
-          <p className="mt-1 text-sm text-areia-500">
-            Marque o que você já fez. Fica salvo no seu navegador.
-          </p>
-        </div>
-        <span className="font-display text-2xl font-extrabold text-elev-700 tabular-nums">
-          {concluidos}/{CHECKLIST_PREPARO.length}
-        </span>
-      </div>
-
-      <Progresso valor={percentual} rotulo="Progresso do checklist" className="mt-4" />
-
-      <ul className="mt-7 space-y-1">
-        {CHECKLIST_PREPARO.map((item) => {
-          const marcado = marcados.includes(item.id)
-
-          return (
-            <li key={item.id}>
-              <label className="flex cursor-pointer items-center gap-3.5 rounded-xl px-3 py-2.5 transition hover:bg-areia-50">
-                <input
-                  type="checkbox"
-                  checked={marcado}
-                  onChange={() => alternar(item.id)}
-                  className="sr-only"
-                />
-                <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition ${
-                    marcado ? 'border-elev-700 bg-elev-700' : 'border-areia-300'
-                  }`}
-                  aria-hidden="true"
-                >
-                  {marcado && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
-                </span>
-                <span
-                  className={`text-sm transition ${
-                    marcado ? 'text-areia-400 line-through' : 'text-areia-700'
-                  }`}
-                >
-                  {item.texto}
-                </span>
-              </label>
-            </li>
-          )
-        })}
-      </ul>
-
-      {percentual === 100 && (
-        <p className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
-          Você está pronto. Agora é constância: candidate-se todo dia e não desanime com os “nãos”.
-        </p>
-      )}
-    </div>
-  )
-}
-
-/* ==========================================================================
    Página
    ========================================================================== */
 
@@ -341,24 +266,6 @@ export default function Dicas() {
             {VIDEO_AULAS.map((video, i) => (
               <VideoAula key={video.id} video={video} atraso={Math.min(i, 6) * 0.05} />
             ))}
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------- Checklist */}
-        <section className="mt-20">
-          <Revelar>
-            <TituloSecao
-              sobretitulo="Antes de se candidatar"
-              titulo="Você está pronto?"
-              descricao="Dez itens que separam um candidato preparado de um currículo que passa batido."
-              centralizado
-            />
-          </Revelar>
-
-          <div className="mx-auto mt-10 max-w-2xl">
-            <Revelar>
-              <Checklist />
-            </Revelar>
           </div>
         </section>
 

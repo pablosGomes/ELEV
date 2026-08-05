@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## O projeto
 
-ELEV é uma plataforma gratuita (trabalho acadêmico, sem fins lucrativos) que ajuda jovens brasileiros a entrar no mercado de trabalho: cursos gratuitos, teste vocacional, gerador de currículo em PDF, vagas de Jovem Aprendiz e dicas de carreira. Não tem cadastro — currículo, respostas do teste e checklist ficam só no `localStorage` do navegador (chaves `elev:curriculo`, `elev:vocacional`, `elev:checklist`).
+ELEV é uma plataforma gratuita (trabalho acadêmico, sem fins lucrativos) que ajuda jovens brasileiros a entrar no mercado de trabalho: cursos gratuitos, teste vocacional, gerador de currículo em PDF, vagas de Jovem Aprendiz e dicas de carreira. Não tem cadastro — currículo e respostas do teste ficam só no `localStorage` do navegador (chaves `elev:curriculo`, `elev:vocacional`).
 
 Stack: React 19 + Vite + Tailwind CSS 4, roteado por `react-router-dom`, publicado na Vercel. As respostas em texto do repositório (comentários, mensagens de commit, UI) são em português do Brasil — siga essa convenção.
 
