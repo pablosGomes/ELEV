@@ -128,7 +128,7 @@ function VideoAula({ video, atraso }) {
             <p className="mt-2 flex-1 text-sm leading-relaxed text-areia-600">{video.descricao}</p>
 
             <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-elev-700">
-              Ver aulas sobre o tema
+              Buscar aulas sobre o tema
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
             </span>
           </div>
@@ -177,6 +177,15 @@ function VideoAula({ video, atraso }) {
           </Chip>
           <h3 className="mt-3 text-base leading-snug font-bold">{video.titulo}</h3>
           <p className="mt-2 flex-1 text-sm leading-relaxed text-areia-600">{video.descricao}</p>
+
+          {/* O vídeo é de terceiro: o canal aparece para o crédito ficar visível
+              e para o usuário saber de quem é a orientação que vai receber. */}
+          {video.canal && (
+            <p className="mt-4 flex items-center gap-1.5 border-t border-areia-100 pt-3 text-xs text-areia-500">
+              <PlayCircle className="h-3.5 w-3.5 shrink-0 text-areia-400" aria-hidden="true" />
+              <span className="min-w-0 truncate">{video.canal}</span>
+            </p>
+          )}
         </div>
       </article>
     </Revelar>
@@ -258,7 +267,7 @@ export default function Dicas() {
             <TituloSecao
               sobretitulo="Vídeo-aulas"
               titulo="Aprenda vendo"
-              descricao="Aulas em vídeo sobre currículo, entrevista, Excel e comportamento profissional — todas gratuitas."
+              descricao="Seis aulas gratuitas no YouTube, de canais brasileiros, sobre currículo, entrevista, direitos do aprendiz, Excel, LinkedIn e postura no trabalho. Toque para assistir aqui mesmo."
             />
           </Revelar>
 

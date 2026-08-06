@@ -210,56 +210,76 @@ export const GUIAS = [
   },
 ]
 
+/**
+ * Vídeo-aulas.
+ *
+ * `youtubeId` aponta para um vídeo real, de canal brasileiro, verificado pelo
+ * endpoint oEmbed do YouTube (existe e permite incorporação). `titulo` e
+ * `canal` são os do vídeo de verdade, não um resumo nosso: quem clica precisa
+ * reconhecer o que abriu, e o canal merece o crédito.
+ *
+ * `busca` continua aqui de propósito. Vídeo do YouTube é conteúdo de terceiro:
+ * o autor pode remover ou desativar a incorporação a qualquer momento, e nesse
+ * dia o card cai para uma busca pelo tema em vez de mostrar um player quebrado.
+ * Para desativar um vídeo à mão, basta voltar `youtubeId` para `null`.
+ */
 export const VIDEO_AULAS = [
   {
     id: 'va-curriculo',
-    titulo: 'Montando o currículo de primeiro emprego',
+    titulo: 'Como fazer currículo para primeiro emprego e jovem aprendiz',
     descricao: 'Passo a passo prático, do cabeçalho às habilidades, para quem ainda não trabalhou.',
     tema: 'Currículo',
-    youtubeId: null,
+    canal: 'Mari Rel',
+    youtubeId: '9Ut5U3YmcMQ',
     busca: 'como fazer curriculo primeiro emprego jovem aprendiz',
   },
   {
     id: 'va-entrevista',
-    titulo: 'Simulação de entrevista de emprego',
+    titulo: 'Simulação de entrevista: perguntas e respostas',
     descricao:
-      'Veja uma entrevista completa comentada e entenda o que o recrutador avalia em cada resposta.',
+      'Uma entrevista simulada do começo ao fim, com as perguntas que mais caem e como respondê-las.',
     tema: 'Entrevista',
-    youtubeId: null,
+    canal: 'Carolina Okubo — PraCarreiras',
+    youtubeId: 'xyZMfBGssNI',
     busca: 'simulacao entrevista de emprego jovem aprendiz comentada',
   },
   {
     id: 'va-aprendiz',
-    titulo: 'Como funciona o programa Jovem Aprendiz',
-    descricao: 'Direitos, jornada, salário, duração do contrato e como se inscrever nos programas.',
+    titulo: 'Jovem Aprendiz: direitos e deveres, como funciona',
+    descricao:
+      'O que a Lei da Aprendizagem garante: jornada, salário, férias, FGTS e duração do contrato.',
     tema: 'Carreira',
-    youtubeId: null,
+    canal: 'Licia Santana — Dicas Trabalhistas',
+    youtubeId: 'DuBd0rHNmGQ',
     busca: 'como funciona programa jovem aprendiz direitos lei da aprendizagem',
   },
   {
     id: 'va-excel',
-    titulo: 'Excel básico para quem vai trabalhar',
+    titulo: 'Excel do zero — aula 1 do curso gratuito',
     descricao: 'As funções que realmente aparecem no dia a dia de um assistente administrativo.',
     tema: 'Habilidades',
-    youtubeId: null,
+    canal: 'Beto Camelini',
+    youtubeId: '9OIWw2h7al0',
     busca: 'curso excel basico completo para iniciantes trabalho',
   },
   {
     id: 'va-linkedin',
-    titulo: 'Criando seu perfil no LinkedIn',
+    titulo: 'LinkedIn para aprendiz sem experiência',
     descricao:
       'Como montar um perfil profissional mesmo sem experiência e ser encontrado por recrutadores.',
     tema: 'Carreira',
-    youtubeId: null,
+    canal: 'Meu Primeiro Emprego',
+    youtubeId: 'HMQHE5qBGsA',
     busca: 'como criar perfil linkedin sem experiencia primeiro emprego',
   },
   {
     id: 'va-soft-skills',
-    titulo: 'Comportamento profissional no trabalho',
+    titulo: 'Postura profissional no trabalho: 10 dicas',
     descricao:
       'Pontualidade, comunicação, feedback e postura: o que mais faz aprendiz ser efetivado.',
     tema: 'Habilidades',
-    youtubeId: null,
+    canal: 'Blog Abri Minha Empresa',
+    youtubeId: '_RsMoc5s93Y',
     busca: 'postura profissional no trabalho primeiro emprego dicas',
   },
 ]
