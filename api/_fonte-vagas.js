@@ -22,7 +22,8 @@ const PALAVRAS_POR_AREA = {
     'software',
     'desenvolvedor',
     'help desk',
-    'redes',
+    // "redes" sozinho puxaria "redes sociais", que é comunicação.
+    'redes de computadores',
   ],
   saude: ['saude', 'clinica', 'enfermagem', 'farmacia', 'hospital', 'odonto'],
   negocios: [
@@ -36,7 +37,15 @@ const PALAVRAS_POR_AREA = {
     'atendimento',
     'escritorio',
   ],
-  comunicacao: ['marketing', 'design', 'comunicacao', 'social media', 'publicidade', 'conteudo'],
+  comunicacao: [
+    'marketing',
+    'design',
+    'comunicacao',
+    'social media',
+    'redes sociais',
+    'publicidade',
+    'conteudo',
+  ],
   educacao: ['educacao', 'pedagogico', 'escola', 'professor', 'monitor', 'creche'],
   industria: [
     'logistica',
@@ -75,17 +84,41 @@ export function separarLocal(local = '') {
 }
 
 /**
+ * Monta o teste de uma palavra-chave.
+ *
+ * Buscar a palavra com `includes()` parece inofensivo até a lista ter uma sigla
+ * curta: `'ti'` (de TI) casa dentro de "a**ti**vidades", "adminis**ti**rativas"
+ * e "marke**ti**ng`", que aparecem em quase todo anúncio — o resultado foi 24 de
+ * 30 vagas classificadas como Tecnologia em produção, inclusive uma clínica de
+ * psicologia.
+ *
+ * Daí a regra: sigla de até 2 letras só vale como palavra inteira (`\bti\b`);
+ * as demais casam do início da palavra para a frente (`\beletric` pega
+ * "eletricista" e "eletrica", `\bodonto` pega "odontologia").
+ */
+function testeDaPalavra(palavra) {
+  const limite = palavra.length <= 2 ? `\\b${palavra}\\b` : `\\b${palavra}`
+  return new RegExp(limite)
+}
+
+// Compilado uma vez: `classificarArea` roda por anúncio, dentro de um laço.
+const TESTES_POR_AREA = Object.entries(PALAVRAS_POR_AREA).map(([area, palavras]) => [
+  area,
+  palavras.map(testeDaPalavra),
+])
+
+/**
  * Classificação por palavra-chave.
  *
- * É o plano B: acerta o óbvio e erra o resto, porque olha só o título. Quando
- * a chave da Mistral está configurada, quem classifica é o modelo lendo o
- * anúncio inteiro (veja `_mistral.js`).
+ * É o plano B: acerta o óbvio e erra o resto, porque olha só título e resumo.
+ * Quando a chave da Mistral está configurada, quem classifica é o modelo lendo
+ * o anúncio inteiro (veja `_mistral.js`).
  */
 export function classificarArea(texto = '') {
   const alvo = String(texto).toLowerCase().normalize('NFD').replace(MARCAS_DE_ACENTO, '')
 
-  for (const [area, palavras] of Object.entries(PALAVRAS_POR_AREA)) {
-    if (palavras.some((palavra) => alvo.includes(palavra))) return area
+  for (const [area, testes] of TESTES_POR_AREA) {
+    if (testes.some((teste) => teste.test(alvo))) return area
   }
   return 'negocios'
 }

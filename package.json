@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "lint": "prettier --check .",
     "vagas": "node scripts/gerar-vagas.mjs",
+    "verificar": "node scripts/verificar-classificacao.mjs",
     "prebuild": "node scripts/gerar-vagas.mjs"
   },
   "repository": {
