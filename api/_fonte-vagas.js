@@ -69,14 +69,39 @@ export function limparTexto(html = '') {
     .trim()
 }
 
-/** Separa "Cidade, Estado" no formato que o front-end usa nos filtros. */
+/**
+ * Valores que o Jooble manda no campo de local mas que não são cidade nenhuma.
+ *
+ * Boa parte dos anúncios vem com `location: "Brasil"` — o país, usado como
+ * "não informamos onde". Sem esta lista, "Brasil" era copiado para `cidade` e o
+ * card exibia "Brasil" como se fosse o município da vaga.
+ */
+const LOCAIS_QUE_NAO_SAO_CIDADE = new Set([
+  'brasil',
+  'brazil',
+  'nacional',
+  'remoto',
+  'home office',
+  'a combinar',
+  'nao informado',
+])
+
+/**
+ * Separa "Cidade, Estado" no formato que o front-end usa nos filtros.
+ *
+ * Devolve string vazia quando não dá para saber: campo vazio some da interface,
+ * enquanto um palpite errado vira uma informação falsa na tela.
+ */
 export function separarLocal(local = '') {
   const partes = String(local)
     .split(',')
     .map((p) => p.trim())
     .filter(Boolean)
 
-  const cidade = partes[0] || ''
+  const bruta = partes[0] || ''
+  const comparavel = bruta.toLowerCase().normalize('NFD').replace(MARCAS_DE_ACENTO, '')
+  const cidade = LOCAIS_QUE_NAO_SAO_CIDADE.has(comparavel) ? '' : bruta
+
   const possivelEstado = partes[partes.length - 1] || ''
   const estado = /^[A-Za-z]{2}$/.test(possivelEstado) ? possivelEstado.toUpperCase() : ''
 
@@ -175,7 +200,11 @@ export function normalizarSemIa(bruta) {
     titulo: bruta.titulo || 'Vaga de Jovem Aprendiz',
     empresa: bruta.empresa || 'Empresa não informada',
     area: classificarArea(`${bruta.titulo} ${bruta.texto}`),
-    cidade: bruta.cidade || 'Não informado',
+    // Sem `|| 'Não informado'`: string vazia é a ausência do dado, e a interface
+    // já esconde a linha de local quando ela vem vazia. Gravar o texto de
+    // exibição aqui fazia o campo mentir que tinha valor — e `resumirVaga`
+    // chegava a mandar "Não informado" ao modelo como se fosse o município.
+    cidade: bruta.cidade,
     estado: bruta.estado,
     modalidade: /remoto|home office/i.test(`${bruta.titulo} ${bruta.texto}`)
       ? 'Remoto'

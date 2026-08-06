@@ -73,7 +73,8 @@ function finalizar(vaga, bruta) {
 
   return {
     ...resto,
-    cidade: vaga.cidade || 'Não informado',
+    // Vazio quando o anúncio não diz onde é — ver `normalizarSemIa`.
+    cidade: vaga.cidade,
     modalidade: vaga.modalidade || 'Presencial',
     jornada: vaga.jornada || 'A combinar',
     salario: vaga.salario || 'A combinar',

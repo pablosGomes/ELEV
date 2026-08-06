@@ -14,13 +14,13 @@ Stack: React 19 + Vite + Tailwind CSS 4, roteado por `react-router-dom`, publica
 npm run dev      # servidor de desenvolvimento em http://localhost:5173
 npm run build    # roda o prebuild (scripts/gerar-vagas.mjs) e depois vite build
 npm run vagas    # roda só o gerador de vagas, sem buildar
-npm run verificar # confere a classificação de área por palavra-chave
+npm run verificar # confere a classificação de área e a separação de cidade/estado
 npm run preview  # serve o build de produção localmente
 npm run format   # prettier --write .
 npm run lint     # prettier --check .
 ```
 
-Não há suíte de testes — só `npm run verificar`, um script com `assert` do Node que cobre a classificação de área por palavra-chave (a lógica que já publicou dados errados em produção). Sem framework de propósito.
+Não há suíte de testes — só `npm run verificar`, um script com `assert` do Node que cobre `classificarArea()` e `separarLocal()`, as duas funções que já publicaram dado errado em produção sem quebrar nada. Sem framework de propósito.
 
 **As rotas em `api/*.js` são Serverless Functions da Vercel e não rodam com `npm run dev`** — o Vite serve o `index.html` para qualquer caminho que não reconheça, então `fetch('/api/...')` falha silenciosamente em dev (a camada de dados trata isso, veja abaixo). Para testar as functions de verdade, use `npx vercel dev`.
 
@@ -58,7 +58,11 @@ Arquivos com `_` no início (`api/_mistral.js`, `api/_fonte-vagas.js`, `api/_cat
 
 **Modo de falha que já mordeu:** um `MISTRAL_MODEL` inválido não quebra nada de forma visível. A API recusa toda chamada, os dois formatos de resposta erram igual, e o build cai na classificação por palavra-chave — publicando vagas reais sem requisitos, sem benefícios e com área não confiável. Quando isso acontece, `gerar-vagas.mjs` grava `motivo` no arquivo gerado e `fonte` fica `jooble` (em vez de `jooble+ia`); essa é a assinatura para procurar. Confira IDs na [lista oficial da Mistral](https://docs.mistral.ai/getting-started/models/models_overview/).
 
-`classificarArea()` em `_fonte-vagas.js` casa palavras-chave por início de palavra, e siglas de até 2 letras (`ti`, `rh`) só como palavra inteira. A versão antiga usava `includes()`, e `'ti'` casava dentro de "a**ti**vidades" e "marke**ti**ng" — 24 de 30 vagas publicadas viraram "Tecnologia". `npm run verificar` protege esse comportamento.
+`classificarArea()` em `_fonte-vagas.js` casa palavras-chave por início de palavra, e siglas de até 2 letras (`ti`, `rh`) só como palavra inteira. A versão antiga usava `includes()`, e `'ti'` casava dentro de "a**ti**vidades" e "marke**ti**ng" — 24 de 30 vagas publicadas viraram "Tecnologia".
+
+`separarLocal()` devolve `cidade: ''` para valores que não são cidade (o Jooble manda `location: "Brasil"` em boa parte dos anúncios). **Campo ausente é string vazia, nunca um texto de exibição:** gravar `'Não informado'` no dado fazia o campo mentir que tinha valor, e `resumirVaga` chegava a mandar isso ao modelo como se fosse o município. Quem decide como mostrar a ausência é a interface, que já esconde a linha inteira quando o valor vem vazio.
+
+`npm run verificar` protege os dois comportamentos.
 
 ### Privacidade na recomendação
 
