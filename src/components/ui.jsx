@@ -34,7 +34,10 @@ export function Botao({
   ...props
 }) {
   const classes = [
-    'inline-flex items-center justify-center rounded-xl font-semibold transition-all',
+    'inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-200',
+    // O recuo no clique é o retorno tátil que falta num botão de tela: sem ele
+    // o usuário só descobre que o clique valeu quando a próxima tela aparece.
+    'active:scale-[0.97] disabled:active:scale-100',
     'disabled:cursor-not-allowed disabled:opacity-60',
     VARIANTES[variante] ?? VARIANTES.primario,
     TAMANHOS_BOTAO[tamanho] ?? TAMANHOS_BOTAO.md,

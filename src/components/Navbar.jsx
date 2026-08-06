@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { obterIcone } from '../lib/icones.js'
 
@@ -10,6 +11,7 @@ export default function Navbar() {
   const [aberto, setAberto] = useState(false)
   const [rolou, setRolou] = useState(false)
   const local = useLocation()
+  const semMovimento = useReducedMotion()
 
   // Fecha o menu ao navegar para outra aba.
   useEffect(() => setAberto(false), [local.pathname])
@@ -66,9 +68,22 @@ export default function Navbar() {
                 {({ isActive }) => (
                   <>
                     {aba.rotulo}
-                    {isActive && (
-                      <span className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-elev-700" />
-                    )}
+                    {/*
+                      `layoutId` compartilhado: o framer-motion entende que o
+                      sublinhado das abas é o MESMO elemento mudando de lugar, e
+                      desliza de uma para a outra em vez de sumir aqui e
+                      reaparecer ali.
+                    */}
+                    {isActive &&
+                      (semMovimento ? (
+                        <span className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-elev-700" />
+                      ) : (
+                        <motion.span
+                          layoutId="aba-ativa"
+                          className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-elev-700"
+                          transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                        />
+                      ))}
                   </>
                 )}
               </NavLink>

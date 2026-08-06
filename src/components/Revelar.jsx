@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 
 /**
- * Revela o conteúdo com um fade + subida quando ele entra na tela.
+ * Revela o conteúdo quando ele entra na tela.
  *
  * Respeita `prefers-reduced-motion`: quem configurou o sistema para reduzir
  * animações recebe o conteúdo estático, sem movimento.
@@ -12,7 +12,28 @@ import { motion, useReducedMotion } from 'framer-motion'
  * `truncate`, por exemplo) vira o piso de largura do card e estoura a grade
  * no celular. Um wrapper de animação não deve interferir no layout.
  */
-export default function Revelar({ children, atraso = 0, className = '', as = 'div' }) {
+
+/**
+ * De onde o conteúdo entra.
+ *
+ * As distâncias são curtas de propósito. Movimento longo chama atenção para a
+ * animação em vez do conteúdo, e numa página com dezenas de cards vira ruído —
+ * o objetivo é a página parecer viva, não coreografada.
+ */
+const ENTRADAS = {
+  baixo: { y: 18 },
+  esquerda: { x: -22 },
+  direita: { x: 22 },
+  escala: { scale: 0.96 },
+}
+
+export default function Revelar({
+  children,
+  atraso = 0,
+  direcao = 'baixo',
+  className = '',
+  as = 'div',
+}) {
   const semMovimento = useReducedMotion()
   const classes = `min-w-0 ${className}`.trim()
 
@@ -22,14 +43,17 @@ export default function Revelar({ children, atraso = 0, className = '', as = 'di
   }
 
   const Componente = motion[as] ?? motion.div
+  const entrada = ENTRADAS[direcao] ?? ENTRADAS.baixo
 
   return (
     <Componente
       className={classes}
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, ...entrada }}
+      whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+      // `once`: a animação roda uma vez e o elemento fica. Repetir a cada
+      // rolagem faria a página piscar para quem sobe e desce procurando algo.
       viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.45, delay: atraso, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, delay: atraso, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </Componente>

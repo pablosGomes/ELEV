@@ -107,9 +107,15 @@
     @apply mb-1.5 block text-xs font-semibold tracking-wide text-areia-600 uppercase;
   }
 
+  /*
+    A duracao e a curva sao explicitas (o padrao do Tailwind e 150ms linear-ish):
+    150ms num card que sobe e ganha sombra parece um "tranco", 250ms com saida
+    suave parece o card reagindo ao mouse.
+  */
   .cartao-elev {
-    @apply rounded-2xl border border-areia-200 bg-white shadow-sm transition
-      hover:-translate-y-0.5 hover:border-elev-200 hover:shadow-elev;
+    @apply rounded-2xl border border-areia-200 bg-white shadow-sm
+      transition-[transform,box-shadow,border-color] duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]
+      hover:-translate-y-1 hover:border-elev-200 hover:shadow-elev;
   }
 }
 
