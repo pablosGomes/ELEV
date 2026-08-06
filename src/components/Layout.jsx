@@ -51,7 +51,15 @@ export default function Layout() {
     <div className="flex min-h-dvh flex-col">
       <RolarParaTopo />
       <Navbar />
-      <main id="conteudo" className="flex-1">
+      {/*
+        `overflow-x: clip` contém o deslocamento das animações de entrada.
+        `Revelar direcao="esquerda|direita"` desloca o elemento em ~22px antes
+        de trazê-lo ao lugar; num elemento que já ocupa a largura toda, esses
+        22px viram barra de rolagem horizontal no celular até a animação
+        terminar. `clip` em vez de `hidden` porque `hidden` criaria um contexto
+        de rolagem e quebraria o `position: sticky` da prévia do currículo.
+      */}
+      <main id="conteudo" className="flex-1 overflow-x-clip">
         <Pagina>
           <Outlet />
         </Pagina>
