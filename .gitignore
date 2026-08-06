@@ -4,6 +4,9 @@ dist-ssr
 .vercel
 *.local
 
+# Grafo de conhecimento gerado pelo /graphify — artefato de análise, não código
+graphify-out
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

@@ -27,7 +27,7 @@ export default function Sobre() {
         {/* --------------------------------------------------- O projeto */}
         <section className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-7">
-            <Revelar>
+            <Revelar direcao="esquerda">
               <TituloSecao sobretitulo="O projeto" titulo="Por que o ELEV existe" />
               <p className="mt-5 text-base leading-relaxed text-areia-600 sm:text-lg">
                 O ELEV é uma plataforma voltada para auxiliar jovens em sua entrada no mercado de
@@ -36,15 +36,14 @@ export default function Sobre() {
               </p>
               <p className="mt-4 leading-relaxed text-areia-600">
                 A ideia nasceu como trabalho acadêmico, mas foi construída para ser útil de verdade:
-                sem cadastro, sem custo e sem letras miúdas. Currículo, respostas do teste
-                vocacional e checklist ficam salvos só no navegador de quem usa — nenhum dado sai do
-                aparelho.
+                sem cadastro, sem custo e sem letras miúdas. O currículo e as respostas do teste
+                vocacional ficam salvos só no navegador de quem usa — nenhum dado sai do aparelho.
               </p>
             </Revelar>
           </div>
 
           <div className="lg:col-span-5">
-            <Revelar atraso={0.08}>
+            <Revelar direcao="direita" atraso={0.08}>
               <div className="rounded-2xl border border-areia-200 bg-areia-50/60 p-7">
                 <h3 className="text-sm font-bold tracking-wide text-elev-800 uppercase">
                   Objetivo do site
@@ -80,7 +79,7 @@ export default function Sobre() {
 
           <div className="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {EQUIPE.map((pessoa, i) => (
-              <Revelar key={pessoa.id} atraso={i * 0.07}>
+              <Revelar key={pessoa.id} direcao="escala" atraso={i * 0.07}>
                 <div className="cartao-elev group overflow-hidden">
                   <div className="aspect-[3/4] overflow-hidden bg-areia-100">
                     <img

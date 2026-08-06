@@ -131,7 +131,11 @@ export default function Inicio() {
 
             <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-areia-200 pt-8">
               {[
-                { valor: `${CURSOS.length}+`, rotulo: 'Cursos gratuitos' },
+                // Os dois primeiros números vêm dos próprios dados: se um curso
+                // for adicionado ou removido, o texto acompanha sozinho. Nada de
+                // "26+" — são 26, e um número redondo inflado seria a primeira
+                // coisa falsa que o visitante lê.
+                { valor: `${CURSOS.length}`, rotulo: 'Cursos gratuitos' },
                 { valor: `${AREAS.length}`, rotulo: 'Áreas mapeadas' },
                 { valor: 'R$ 0', rotulo: 'Do início ao fim' },
               ].map((item) => (
@@ -149,7 +153,7 @@ export default function Inicio() {
 
           {/* Cartão ilustrativo do fluxo */}
           <div className="lg:col-span-5">
-            <Revelar className="relative">
+            <Revelar direcao="direita" className="relative">
               <div className="rounded-3xl border border-areia-200 bg-white p-6 shadow-elev-lg">
                 <div className="flex items-center gap-3 border-b border-areia-100 pb-4">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-elev-700 text-sm font-bold text-white">
