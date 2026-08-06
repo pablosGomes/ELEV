@@ -14,12 +14,13 @@ Stack: React 19 + Vite + Tailwind CSS 4, roteado por `react-router-dom`, publica
 npm run dev      # servidor de desenvolvimento em http://localhost:5173
 npm run build    # roda o prebuild (scripts/gerar-vagas.mjs) e depois vite build
 npm run vagas    # roda só o gerador de vagas, sem buildar
+npm run verificar # confere a classificação de área por palavra-chave
 npm run preview  # serve o build de produção localmente
 npm run format   # prettier --write .
 npm run lint     # prettier --check .
 ```
 
-Não há suíte de testes configurada.
+Não há suíte de testes — só `npm run verificar`, um script com `assert` do Node que cobre a classificação de área por palavra-chave (a lógica que já publicou dados errados em produção). Sem framework de propósito.
 
 **As rotas em `api/*.js` são Serverless Functions da Vercel e não rodam com `npm run dev`** — o Vite serve o `index.html` para qualquer caminho que não reconheça, então `fetch('/api/...')` falha silenciosamente em dev (a camada de dados trata isso, veja abaixo). Para testar as functions de verdade, use `npx vercel dev`.
 
@@ -47,11 +48,17 @@ Motivo de rodar no build e não por requisição: o consumo de cota da API cai p
 **2. Recomendação personalizada (`POST /api/combinar`) — em tempo real.**
 Cruza o perfil do usuário (teste vocacional + currículo, montado no cliente por `src/lib/perfil.js::montarPerfil`) com uma lista de vagas candidatas via `api/_mistral.js::recomendarVagas`.
 
-> **Nota de arquitetura:** `api/combinar.js` monta as candidatas a partir de `VAGAS_EXEMPLO` (`src/data/vagas.js`), **não** de `src/data/vagas-geradas.js`. Ou seja, mesmo com o Jooble configurado e `/api/vagas` servindo vagas reais, a recomendação personalizada continua avaliando apenas os exemplos estáticos. Se for esperado que a recomendação também considere vagas reais, `api/combinar.js` precisa importar `VAGAS_GERADAS` da mesma forma que `api/vagas.js` faz.
+As candidatas saem de `api/_catalogo.js::catalogoDeVagas()` — a **mesma** função que `/api/vagas` usa para listar. Isso não é preferência de estilo: quando cada rota decidia sozinha qual catálogo ler, elas divergiram em produção (a listagem servia vagas reais do Jooble e a recomendação avaliava só `VAGAS_EXEMPLO`, indicando vagas que nem estavam na página). Ao mexer na origem das vagas, mexa nessa função, não nas rotas.
+
+O `fonte` devolvido por `catalogoDeVagas()` viaja até a UI nas duas rotas, e a seção de recomendação usa isso para dizer se a análise leu anúncios reais ou vagas de exemplo.
 
 Ambas as tarefas de IA passam pela mesma função interna `conversar()` em `api/_mistral.js`: tenta `responseFormat: json_schema` (`strict: true`) e, se o modelo específico não aceitar, cai para `json_object` (formato garantido só pelo prompt + validação em código). Toda resposta do modelo é tratada como entrada não confiável — ids inventados, duplicatas e campos fora do schema são descartados em silêncio, nunca propagados para a UI (ver `validar()` em `_mistral.js` e o filtro por id em `organizarLote()`). HTTP 429 (limite do free tier da Mistral) é detectado por `ehLimiteDeUso()` e nunca gera novo retry automático — nem no script de build (para não gastar cota já usada) nem na rota de recomendação (que devolve 429 com mensagem acionável para o usuário tentar de novo).
 
-Arquivos com `_` no início (`api/_mistral.js`, `api/_fonte-vagas.js`) são código compartilhado e não viram rota na Vercel.
+Arquivos com `_` no início (`api/_mistral.js`, `api/_fonte-vagas.js`, `api/_catalogo.js`) são código compartilhado e não viram rota na Vercel.
+
+**Modo de falha que já mordeu:** um `MISTRAL_MODEL` inválido não quebra nada de forma visível. A API recusa toda chamada, os dois formatos de resposta erram igual, e o build cai na classificação por palavra-chave — publicando vagas reais sem requisitos, sem benefícios e com área não confiável. Quando isso acontece, `gerar-vagas.mjs` grava `motivo` no arquivo gerado e `fonte` fica `jooble` (em vez de `jooble+ia`); essa é a assinatura para procurar. Confira IDs na [lista oficial da Mistral](https://docs.mistral.ai/getting-started/models/models_overview/).
+
+`classificarArea()` em `_fonte-vagas.js` casa palavras-chave por início de palavra, e siglas de até 2 letras (`ti`, `rh`) só como palavra inteira. A versão antiga usava `includes()`, e `'ti'` casava dentro de "a**ti**vidades" e "marke**ti**ng" — 24 de 30 vagas publicadas viraram "Tecnologia". `npm run verificar` protege esse comportamento.
 
 ### Privacidade na recomendação
 
@@ -77,7 +84,7 @@ Nenhuma é obrigatória — o site publica e funciona por completo sem configura
 | ----------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | `JOOBLE_API_KEY`  | `/api/vagas` serve `VAGAS_EXEMPLO`                                                                              | busca anúncios reais no build                                             |
 | `MISTRAL_API_KEY` | organização de vagas cai para classificação por palavra-chave (`normalizarSemIa`); `/api/combinar` responde 503 | habilita `organizarLote` e `recomendarVagas`                              |
-| `MISTRAL_MODEL`   | usa `mistral-small-4-0-26-03`                                                                                   | sobrescreve o modelo (a Mistral aposenta IDs datados sem alias `-latest`) |
+| `MISTRAL_MODEL`   | usa `mistral-small-2603`                                                                                        | sobrescreve o modelo (a Mistral aposenta IDs datados sem alias `-latest`) |
 
 ## Convenções específicas do projeto
 

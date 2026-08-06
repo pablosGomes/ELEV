@@ -135,6 +135,7 @@ async function principal() {
   const porId = new Map(brutas.map((bruta) => [bruta.id, bruta]))
   const organizadas = []
   let lotesComFalha = 0
+  let ultimoErro = ''
 
   for (const [indice, lote] of lotes.entries()) {
     if (indice > 0) await dormir(PAUSA_ENTRE_LOTES_MS)
@@ -164,6 +165,7 @@ async function principal() {
       log(`lote ${indice + 1}/${lotes.length} concluído`)
     } catch (erro) {
       lotesComFalha += 1
+      ultimoErro = erro.message
 
       if (ehLimiteDeUso(erro)) {
         // Bater no limite do free tier no meio do build não deve custar as
@@ -186,10 +188,25 @@ async function principal() {
     return
   }
 
+  // Todos os lotes falharem significa que a organização por IA não aconteceu:
+  // as vagas saíram da classificação por palavra-chave, sem requisitos nem
+  // benefícios. Isso já passou despercebido em produção porque só aparecia no
+  // log do build — gravar o motivo no arquivo deixa o problema visível para
+  // quem olhar os dados, e a rota `/api/vagas` o repassa.
+  const iaFalhouEmTudo = lotesComFalha === lotes.length
+
+  if (iaFalhouEmTudo) {
+    log(`ATENÇÃO: nenhum lote foi organizado pela IA (último erro: ${ultimoErro})`)
+    log('as vagas vão para o site com área por palavra-chave e sem requisitos')
+  }
+
   await gravar({
     geradoEm: new Date().toISOString(),
-    fonte: lotesComFalha === lotes.length ? 'jooble' : 'jooble+ia',
+    fonte: iaFalhouEmTudo ? 'jooble' : 'jooble+ia',
     modelo: MODELO,
+    ...(iaFalhouEmTudo && {
+      motivo: `A organização por IA falhou em todos os lotes (${ultimoErro}). Confira MISTRAL_API_KEY e se o ID em MISTRAL_MODEL ainda existe.`,
+    }),
     total: organizadas.length,
     descartadas: brutas.length - organizadas.length,
     vagas: organizadas,

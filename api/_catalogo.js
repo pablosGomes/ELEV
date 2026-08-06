@@ -39,5 +39,8 @@ export function catalogoDeVagas() {
     fonte: VAGAS_GERADAS.fonte,
     geradoEm: VAGAS_GERADAS.geradoEm ?? null,
     modelo: VAGAS_GERADAS.modelo ?? null,
+    // Presente quando há vagas reais mas a organização por IA falhou: os
+    // anúncios vieram sem requisitos e com área por palavra-chave.
+    ...(VAGAS_GERADAS.motivo && { motivo: VAGAS_GERADAS.motivo }),
   }
 }

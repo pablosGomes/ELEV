@@ -96,7 +96,7 @@ todo o resto do site funciona normalmente.
 2. Na Vercel: **Settings > Environment Variables**, adicione `MISTRAL_API_KEY`.
 3. Faça um novo deploy.
 
-Provedor: **Mistral**, modelo `mistral-small-4-0-26-03`, configurado em
+Provedor: **Mistral**, modelo `mistral-small-2603`, configurado em
 [`api/_mistral.js`](api/_mistral.js). A Mistral publica IDs datados e aposenta
 os antigos sem alias `-latest`, então o modelo também é sobrescrevível pela
 variável `MISTRAL_MODEL` — se o ID sair do ar, dá para trocar sem commit.

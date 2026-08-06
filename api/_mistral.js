@@ -38,14 +38,22 @@ import { Mistral } from '@mistralai/mistralai'
 import { AREAS } from '../src/data/areas.js'
 
 /**
- * Modelo usado.
+ * Modelo usado — o ID datado do Mistral Small 4 (v26.03).
  *
  * A Mistral publica IDs datados e os aposenta de tempos em tempos, sem alias
  * do tipo `-latest`. Por isso o valor é sobrescrevível por variável de
  * ambiente: se este ID for aposentado, dá para trocar em Settings > Environment
  * Variables, sem mexer no código nem fazer um commit.
+ *
+ * Um ID inválido não falha de forma barulhenta: a API recusa toda chamada, os
+ * dois formatos de resposta erram igual, e `gerar-vagas.mjs` cai na
+ * classificação por palavra-chave em silêncio. Foi o que aconteceu com
+ * `mistral-small-4-0-26-03` — um ID que nunca existiu (o correto é
+ * `mistral-small-2603`), e que por isso publicou 30 vagas sem requisitos,
+ * benefícios nem área confiável. Ao trocar este valor, confira o ID na lista
+ * oficial: https://docs.mistral.ai/getting-started/models/models_overview/
  */
-export const MODELO = process.env.MISTRAL_MODEL || 'mistral-small-4-0-26-03'
+export const MODELO = process.env.MISTRAL_MODEL || 'mistral-small-2603'
 
 /** Cliente Mistral, ou `null` quando a chave não está configurada. */
 export function criarCliente() {
