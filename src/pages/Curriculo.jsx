@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Download, Eye, FileText, Loader2, PencilLine, RotateCcw, Wand2 } from 'lucide-react'
 
 import CabecalhoPagina from '../components/CabecalhoPagina.jsx'
@@ -33,11 +33,6 @@ export default function Curriculo() {
   const [gerando, setGerando] = useState(false)
   const [mensagem, setMensagem] = useState(null)
 
-  // Nó fora da tela, em tamanho A4 real — é dele que o PDF é gerado.
-  // Fica sempre montado para que o download funcione mesmo no celular, onde a
-  // prévia pode não estar visível no momento do clique.
-  const refPdf = useRef(null)
-
   const curriculo = useMemo(() => normalizar(salvo), [salvo])
   const completude = calcularCompletude(curriculo)
 
@@ -46,7 +41,7 @@ export default function Curriculo() {
     setMensagem(null)
 
     try {
-      const arquivo = await gerarPdfCurriculo(refPdf.current, curriculo.dados.nome)
+      const arquivo = await gerarPdfCurriculo(curriculo)
       setMensagem({ tom: 'info', texto: `Pronto! O arquivo ${arquivo} foi baixado.` })
     } catch (erro) {
       setMensagem({
@@ -155,7 +150,7 @@ export default function Curriculo() {
             <div className="lg:sticky lg:top-24">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-areia-600">
                 <FileText className="h-4 w-4 text-elev-700" aria-hidden="true" />
-                Prévia — é assim que o PDF vai sair
+                Prévia do seu currículo
               </div>
 
               <EscalaAjustavel
@@ -165,23 +160,14 @@ export default function Curriculo() {
                 <PreviaCurriculo curriculo={curriculo} />
               </EscalaAjustavel>
 
-              <p className="mt-3 text-xs leading-relaxed text-areia-400">
-                Currículo de uma página, em coluna única — o formato que os sistemas de triagem das
-                empresas leem melhor. Se o conteúdo passar de uma página, o PDF continua na
-                seguinte.
+              <p className="mt-3 text-xs leading-relaxed text-areia-500">
+                Coluna única e texto de verdade no arquivo — os sistemas de triagem das empresas
+                conseguem ler e pesquisar o conteúdo, em vez de receber uma imagem. O PDF segue para
+                a página seguinte se o conteúdo passar de uma.
               </p>
             </div>
           </div>
         </div>
-      </div>
-
-      {/*
-        Alvo do PDF: mesma prévia em tamanho A4 real, posicionada fora da área
-        visível. Não usamos `display: none` porque um elemento oculto assim não
-        pode ser rasterizado.
-      */}
-      <div aria-hidden="true" style={{ position: 'fixed', top: 0, left: -10000, zIndex: -1 }}>
-        <PreviaCurriculo ref={refPdf} curriculo={curriculo} />
       </div>
     </>
   )
