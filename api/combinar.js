@@ -20,7 +20,7 @@
  */
 
 import { criarCliente, ehLimiteDeUso, recomendarVagas } from './_mistral.js'
-import { VAGAS_EXEMPLO } from '../src/data/vagas.js'
+import { catalogoDeVagas } from './_catalogo.js'
 
 /** Quantas vagas são oferecidas ao modelo como candidatas. */
 const MAXIMO_DE_CANDIDATAS = 25
@@ -75,6 +75,7 @@ function resumirVaga(vaga) {
   return {
     id: vaga.id,
     titulo: vaga.titulo,
+    empresa: vaga.empresa,
     area: vaga.area,
     cidade: vaga.cidade,
     estado: vaga.estado,
@@ -112,10 +113,14 @@ export default async function handler(req, res) {
     })
   }
 
+  // As mesmas vagas que a listagem mostra: recomendar de um catálogo e exibir
+  // outro faria o usuário receber indicação de vaga que não está na página.
+  const catalogo = catalogoDeVagas()
+
   // Prioriza as vagas das áreas de maior afinidade, mas mantém as demais na
   // lista — às vezes a vaga que mais combina não é da área "certa".
   const preferidas = new Set(perfil.areasComMaiorAfinidade.slice(0, 3).map((a) => a.area))
-  const ordenadas = [...VAGAS_EXEMPLO].sort((a, b) => {
+  const ordenadas = [...catalogo.vagas].sort((a, b) => {
     const pesoA = preferidas.has(a.area) ? 0 : 1
     const pesoB = preferidas.has(b.area) ? 0 : 1
     return pesoA - pesoB
@@ -133,7 +138,15 @@ export default async function handler(req, res) {
       .map((item) => ({ ...item, vaga: porId.get(item.vagaId) }))
       .filter((item) => item.vaga)
 
-    return res.status(200).json({ resumo: resultado.resumo, recomendacoes })
+    // `fonte` viaja junto para a interface poder dizer se a análise olhou
+    // anúncios reais ou as vagas de exemplo — a recomendação é tão real quanto
+    // o catálogo que ela leu.
+    return res.status(200).json({
+      resumo: resultado.resumo,
+      recomendacoes,
+      fonte: catalogo.fonte,
+      total: candidatas.length,
+    })
   } catch (erro) {
     // Sem detalhes do corpo da requisição no log — ver nota de privacidade.
     console.error('[api/combinar] falha na recomendação:', erro.message)

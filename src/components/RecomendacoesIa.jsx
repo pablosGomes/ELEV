@@ -249,10 +249,15 @@ export default function RecomendacoesIa({ aoAbrirVaga }) {
             )}
 
             <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-              <p className="inline-flex items-start gap-2 text-xs leading-relaxed text-areia-400">
+              <p className="inline-flex max-w-2xl items-start gap-2 text-xs leading-relaxed text-areia-400">
                 <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                Análise gerada por inteligência artificial a partir dos anúncios. É uma sugestão,
-                não uma triagem — confira sempre o anúncio original antes de se candidatar.
+                <span>
+                  {resultado.fonte === 'exemplos'
+                    ? 'A análise leu as vagas de exemplo desta página, não anúncios abertos. Serve para você entender o que pesa numa candidatura — para vagas reais, use os portais oficiais abaixo.'
+                    : 'A análise leu os anúncios reais listados nesta página.'}{' '}
+                  É uma sugestão gerada por inteligência artificial, não uma triagem — confira
+                  sempre o anúncio original antes de se candidatar.
+                </span>
               </p>
 
               <Botao
